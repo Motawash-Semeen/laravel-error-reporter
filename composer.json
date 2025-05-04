@@ -1,5 +1,5 @@
 {
-    "name": "msemeen/error-reporter",
+    "name": "msemeen/laravel-error-reporter",
     "description": "Laravel package to report errors to Discord or Email",
     "type": "library",
     "license": "MIT",
