@@ -63,13 +63,5 @@ class ErrorReporter
     {
         return $this->channels[$channel] ?? null;
     }
-    public function getChannels(): array
-    {
-        return $this->channels;
-    }
 
-    public function setChannel(string $name, ChannelInterface $channel): void
-    {
-        $this->channels[$name] = $channel;
-    }
 }
