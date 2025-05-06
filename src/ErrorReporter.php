@@ -63,5 +63,9 @@ class ErrorReporter
     {
         return $this->channels[$channel] ?? null;
     }
+    public function getChannels(): array
+    {
+        return $this->channels;
+    }
 
 }

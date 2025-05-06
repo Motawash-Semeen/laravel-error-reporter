@@ -2,35 +2,134 @@
 
 namespace Msemeen\ErrorReporter\Tests;
 
+use Msemeen\ErrorReporter\ErrorReporter;
+use Msemeen\ErrorReporter\Exceptions\InvalidChannelException;
 use PHPUnit\Framework\TestCase;
-use Msemeen\ErrorReporter\Facades\ErrorReporter;
-use Msemeen\ErrorReporter\ErrorReporterServiceProvider;
-use Illuminate\Foundation\Application;
+use Mockery as m;
 
 class ErrorReporterTest extends TestCase
 {
-    /** @var Application */
-    protected $app;
-
-    protected function setUp(): void
+    protected function tearDown(): void
     {
-        parent::setUp();
-        
-        $this->app = new Application(__DIR__.'/../');
-        $this->app->register(ErrorReporterServiceProvider::class);
+        m::close();
     }
 
-    /** @test */
-    public function it_can_initialize_the_facade()
+    public function test_it_initializes_channels_from_config()
     {
-        $instance = ErrorReporter::getFacadeRoot();
-        $this->assertNotNull($instance);
+        $config = [
+            'error-reporter' => [
+                'channels' => [
+                    'discord' => ['enabled' => true, 'webhook' => 'test'],
+                    'email' => ['enabled' => false],
+                    'slack' => ['enabled' => true, 'webhook' => 'test'],
+                ]
+            ]
+        ];
+
+        $app = ['config' => $config];
+        $reporter = new ErrorReporter($app);
+
+        $this->assertCount(2, $reporter->getChannels());
     }
 
-    /** @test */
-    public function it_registers_the_service_provider()
+    public function test_it_throws_exception_for_invalid_channel()
     {
-        $providers = $this->app->getLoadedProviders();
-        $this->assertArrayHasKey(ErrorReporterServiceProvider::class, $providers);
+        $this->expectException(InvalidChannelException::class);
+
+        $config = [
+            'error-reporter' => [
+                'channels' => [
+                    'invalid' => ['enabled' => true]
+                ]
+            ]
+        ];
+
+        $app = ['config' => $config];
+        new ErrorReporter($app);
+    }
+
+    public function test_report_method_creates_error_message()
+    {
+        $config = [
+            'error-reporter' => [
+                'channels' => [
+                    'discord' => ['enabled' => true, 'webhook' => 'test']
+                ]
+            ]
+        ];
+
+        $app = ['config' => $config];
+        $reporter = new ErrorReporter($app);
+
+        $mockChannel = m::mock('Msemeen\ErrorReporter\Contracts\ChannelInterface');
+        $mockChannel->shouldReceive('send')->once();
+
+        // Replace the channels array with our mock
+        $reflection = new \ReflectionClass($reporter);
+        $property = $reflection->getProperty('channels');
+        $property->setAccessible(true);
+        $property->setValue($reporter, ['discord' => $mockChannel]);
+
+        $exception = new \Exception('Test exception');
+        $reporter->report($exception);
+    }
+
+    public function test_send_method_creates_custom_message()
+    {
+        $config = [
+            'error-reporter' => [
+                'channels' => [
+                    'discord' => ['enabled' => true, 'webhook' => 'test']
+                ]
+            ]
+        ];
+
+        $app = ['config' => $config];
+        $reporter = new ErrorReporter($app);
+
+        $mockChannel = m::mock('Msemeen\ErrorReporter\Contracts\ChannelInterface');
+        $mockChannel->shouldReceive('send')->once();
+
+        // Replace the channels array with our mock
+        $reflection = new \ReflectionClass($reporter);
+        $property = $reflection->getProperty('channels');
+        $property->setAccessible(true);
+        $property->setValue($reporter, ['discord' => $mockChannel]);
+
+        $reporter->send('Test message', 'Test title');
+    }
+
+    public function test_channel_method_returns_channel_instance()
+    {
+        $config = [
+            'error-reporter' => [
+                'channels' => [
+                    'discord' => ['enabled' => true, 'webhook' => 'test']
+                ]
+            ]
+        ];
+
+        $app = ['config' => $config];
+        $reporter = new ErrorReporter($app);
+
+        $channel = $reporter->channel('discord');
+        $this->assertNotNull($channel);
+        $this->assertInstanceOf('Msemeen\ErrorReporter\Contracts\ChannelInterface', $channel);
+    }
+
+    public function test_channel_method_returns_null_for_invalid_channel()
+    {
+        $config = [
+            'error-reporter' => [
+                'channels' => [
+                    'discord' => ['enabled' => true, 'webhook' => 'test']
+                ]
+            ]
+        ];
+
+        $app = ['config' => $config];
+        $reporter = new ErrorReporter($app);
+
+        $this->assertNull($reporter->channel('nonexistent'));
     }
 }
