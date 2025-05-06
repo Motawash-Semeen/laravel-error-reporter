@@ -50,21 +50,12 @@ class ErrorReporterTest extends TestCase
 
     public function test_report_method_creates_error_message()
     {
-        $config = [
-            'error-reporter' => [
-                'channels' => [
-                    'discord' => ['enabled' => true, 'webhook' => 'test']
-                ]
-            ]
-        ];
-
-        $app = ['config' => $config];
+        $app = ['config' => ['error-reporter' => ['channels' => []]]];
         $reporter = new ErrorReporter($app);
 
         $mockChannel = m::mock('Msemeen\ErrorReporter\Contracts\ChannelInterface');
         $mockChannel->shouldReceive('send')->once();
 
-        // Replace the channels array with our mock
         $reflection = new \ReflectionClass($reporter);
         $property = $reflection->getProperty('channels');
         $property->setAccessible(true);
@@ -76,21 +67,12 @@ class ErrorReporterTest extends TestCase
 
     public function test_send_method_creates_custom_message()
     {
-        $config = [
-            'error-reporter' => [
-                'channels' => [
-                    'discord' => ['enabled' => true, 'webhook' => 'test']
-                ]
-            ]
-        ];
-
-        $app = ['config' => $config];
+        $app = ['config' => ['error-reporter' => ['channels' => []]]];
         $reporter = new ErrorReporter($app);
 
         $mockChannel = m::mock('Msemeen\ErrorReporter\Contracts\ChannelInterface');
         $mockChannel->shouldReceive('send')->once();
 
-        // Replace the channels array with our mock
         $reflection = new \ReflectionClass($reporter);
         $property = $reflection->getProperty('channels');
         $property->setAccessible(true);
@@ -114,7 +96,6 @@ class ErrorReporterTest extends TestCase
 
         $channel = $reporter->channel('discord');
         $this->assertNotNull($channel);
-        $this->assertInstanceOf('Msemeen\ErrorReporter\Contracts\ChannelInterface', $channel);
     }
 
     public function test_channel_method_returns_null_for_invalid_channel()

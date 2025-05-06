@@ -2,18 +2,29 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
          bootstrap="vendor/autoload.php"
-         colors="true">
+         colors="true"
+         verbose="true"
+         convertDeprecationsToExceptions="true"
+         stopOnFailure="false">
     <testsuites>
         <testsuite name="Package Tests">
-            <directory>tests</directory>
+            <directory suffix="Test.php">./tests</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
+    
+    <coverage>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </coverage>
+    
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="ERROR_REPORTER_DISCORD_WEBHOOK" value="https://example.com"/>
+        <env name="ERROR_REPORTER_SLACK_WEBHOOK" value="https://example.com"/>
     </php>
+    
+    <logging>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
+    </logging>
 </phpunit>
