@@ -63,6 +63,10 @@ class DiscordChannel implements ChannelInterface
                         'contents' => substr($title . $message, 0, 2000)
                     ],
                     [
+                        'name' => 'username',
+                        'contents' => $this->config['username'] ?? 'Error Reporter'
+                    ],
+                    [
                         'name' => 'file',
                         'contents' => fopen($tempFile, 'r'),
                         'filename' => 'stacktrace.txt'
